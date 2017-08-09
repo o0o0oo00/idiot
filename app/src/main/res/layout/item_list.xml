@@ -38,7 +38,7 @@
 
 
         <ImageView
-            android:id="@+id/iv_move"
+            android:id="@+id/iv_remove"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/clear" />

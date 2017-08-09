@@ -6,8 +6,6 @@ import android.view.View;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,6 +29,6 @@ public class ListAdapter extends BaseQuickAdapter<Bean, BaseViewHolder> {
         } else {
             helper.itemView.findViewById(R.id.iv_status).setVisibility(View.VISIBLE);
         }
-
+        helper.addOnClickListener(R.id.iv_remove);
     }
 }

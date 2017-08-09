@@ -1,15 +1,15 @@
 package com.bigbadegg.idiot;
 
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String SAVEKAY2 = "savekey2";
     private RecyclerView mNotYet, mHas;
     private EditText mScan;
-    private ImageView mAdd, mClear;
+    private TextView mAdd, mClear;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private ListAdapter adapterHas, adapterNotYet;
@@ -59,8 +59,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mNotYet = (RecyclerView) findViewById(R.id.rv_notyet);
         mHas = (RecyclerView) findViewById(R.id.rv_has);
         mScan = (EditText) findViewById(R.id.et_content);
-        mAdd = (ImageView) findViewById(R.id.iv_add);
-        mClear = (ImageView) findViewById(R.id.iv_clear);
+        mAdd = (TextView) findViewById(R.id.tv_add);
+        mClear = (TextView) findViewById(R.id.tv_clear);
     }
 
     /**
@@ -98,13 +98,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 Bean bean = (Bean) adapter.getData().get(position);
                 bean.setStatus(0);
-                listNotYet.add(0,bean);
+                listNotYet.add(0, bean);
                 adapterNotYet.notifyDataSetChanged();
 
                 listHas.remove(bean);
                 adapterHas.notifyDataSetChanged();
 
 
+            }
+        });
+        adapterNotYet.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+            @Override
+            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+                Bean bean = (Bean) adapter.getData().get(position);
+                listNotYet.remove(bean);
+                adapterNotYet.notifyDataSetChanged();
+            }
+        });
+
+        adapterHas.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
+            @Override
+            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
+                Bean bean = (Bean) adapter.getData().get(position);
+                listHas.remove(bean);
+                adapterHas.notifyDataSetChanged();
             }
         });
         adapterHas.setNewData(listHas);
@@ -114,11 +131,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.iv_add:
+            case R.id.tv_add:
                 addToBeDone();
                 mScan.setText("");
                 break;
-            case R.id.iv_clear:
+            case R.id.tv_clear:
                 mScan.setText("");
                 break;
         }
