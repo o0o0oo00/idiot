@@ -25,10 +25,12 @@ public class ListAdapter extends BaseQuickAdapter<Bean, BaseViewHolder> {
         helper.setText(R.id.tv_content, item.getContent());
         helper.setText(R.id.tv_day, DateFormat.format("yyyy-MM-dd", item.getStartDate()));
         if (item.getStatus() == 0) {//1,完成，0,未完成
-            helper.itemView.findViewById(R.id.iv_status).setVisibility(View.INVISIBLE);
+            helper.setImageResource(R.id.iv_status, R.drawable.edit);
+
         } else {
-            helper.itemView.findViewById(R.id.iv_status).setVisibility(View.VISIBLE);
+            helper.setImageResource(R.id.iv_status, R.drawable.mark);
         }
         helper.addOnClickListener(R.id.iv_remove);
+        helper.addOnClickListener(R.id.iv_status);
     }
 }

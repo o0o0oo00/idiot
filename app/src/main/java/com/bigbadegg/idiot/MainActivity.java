@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+
         adapterHas.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
@@ -110,9 +111,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         adapterNotYet.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
-                Bean bean = (Bean) adapter.getData().get(position);
-                listNotYet.remove(bean);
-                adapterNotYet.notifyDataSetChanged();
+                switch (view.getId()) {
+                    case R.id.iv_remove:
+                        Bean bean = (Bean) adapter.getData().get(position);
+                        listNotYet.remove(bean);
+                        adapterNotYet.notifyDataSetChanged();
+                        break;
+                    case R.id.iv_status:
+                        Bean bean1 = (Bean) adapter.getData().get(position);
+                        mScan.setText(bean1.getContent());
+                        break;
+                }
+
             }
         });
 
