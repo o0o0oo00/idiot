@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -24,18 +23,17 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String SAVEKAY = "savekey";
-    private static final String SAVEKAY2 = "savekey2";
-    private RecyclerView mNotYet, mHas;
+    private static final String IS_FIRST = "isfirst";
+    private RecyclerView recyclerView;
     private EditText mScan;
     private TextView mAdd, mClear;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-    private ListAdapter adapterHas, adapterNotYet;
+    private ListAdapter adapter;
     private Gson gson = new Gson();
-    private List<Bean> listHas = new ArrayList<>();
-    private List<Bean> listNotYet = new ArrayList<>();
-    private String jsonNotYet, jsonHas;
-
+    private List<WarpBean> mDatas = new ArrayList<>();
+    private String jsonData;
+    private boolean isFirst;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 初始化view
      */
     private void initView() {
-        mNotYet = (RecyclerView) findViewById(R.id.rv_notyet);
-        mHas = (RecyclerView) findViewById(R.id.rv_has);
+        recyclerView = (RecyclerView) findViewById(R.id.rv_notyet);
         mScan = (EditText) findViewById(R.id.et_content);
         mAdd = (TextView) findViewById(R.id.tv_add);
         mClear = (TextView) findViewById(R.id.tv_clear);
@@ -75,67 +72,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 初始化列表
      */
     private void initRecycler() {
-        mNotYet.setLayoutManager(new LinearLayoutManager(this));
-        mHas.setLayoutManager(new LinearLayoutManager(this));
-        mNotYet.setAdapter(adapterNotYet = new ListAdapter(new ArrayList<Bean>()));
-        mHas.setAdapter(adapterHas = new ListAdapter(new ArrayList<Bean>()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter = new ListAdapter(new ArrayList<Bean>()));
 
-        adapterNotYet.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
+        adapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                Bean bean = (Bean) adapter.getData().get(position);
-                bean.setStatus(1);
-                listHas.add(0, bean);
-                adapterHas.notifyDataSetChanged();
-
-                listNotYet.remove(bean);
-                adapterNotYet.notifyDataSetChanged();
-            }
-        });
-
-
-        adapterHas.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                Bean bean = (Bean) adapter.getData().get(position);
-                bean.setStatus(0);
-                listNotYet.add(0, bean);
-                adapterNotYet.notifyDataSetChanged();
-
-                listHas.remove(bean);
-                adapterHas.notifyDataSetChanged();
-
-
-            }
-        });
-        adapterNotYet.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
-            @Override
-            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
-                switch (view.getId()) {
-                    case R.id.iv_remove:
-                        Bean bean = (Bean) adapter.getData().get(position);
-                        listNotYet.remove(bean);
-                        adapterNotYet.notifyDataSetChanged();
-                        break;
-                    case R.id.iv_status:
-                        Bean bean1 = (Bean) adapter.getData().get(position);
-                        mScan.setText(bean1.getContent());
-                        break;
+                WarpBean warpBean = (WarpBean) adapter.getData().get(position);
+                if (warpBean.t.getStatus() == 0) {
+                    warpBean.t.setStatus(1);
+                    mDatas.add(mDatas.size(), warpBean);
+                    mDatas.remove(position);
+                } else {
+                    mDatas.add(1, warpBean);
+                    mDatas.remove(position + 1);
+                    warpBean.t.setStatus(0);
                 }
-
+                MainActivity.this.adapter.notifyDataSetChanged();
             }
         });
 
-        adapterHas.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
-            @Override
-            public void onItemChildClick(BaseQuickAdapter adapter, View view, int position) {
-                Bean bean = (Bean) adapter.getData().get(position);
-                listHas.remove(bean);
-                adapterHas.notifyDataSetChanged();
-            }
-        });
-        adapterHas.setNewData(listHas);
-        adapterNotYet.setNewData(listNotYet);
+
+        adapter.setNewData(mDatas);
     }
 
     @Override
@@ -164,9 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bean.setContent(content);
         bean.setStartDate(System.currentTimeMillis() + "");
         bean.setStatus(0);
-
-        listNotYet.add(0, bean);
-        adapterNotYet.notifyDataSetChanged();
+        mDatas.add(1, new WarpBean(bean));
+        adapter.notifyDataSetChanged();
     }
 
 
@@ -174,16 +131,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 获取列表
      */
     private void getJson() {
-
-        jsonNotYet = sharedPreferences.getString(SAVEKAY, "");
-        jsonHas = sharedPreferences.getString(SAVEKAY2, "");
-        if (!TextUtils.isEmpty(jsonNotYet)) {
-            listNotYet = gson.fromJson(jsonNotYet, new TypeToken<List<Bean>>() {
-            }.getType());
+        isFirst = sharedPreferences.getBoolean(IS_FIRST, true);
+        jsonData = sharedPreferences.getString(SAVEKAY, "");
+        if (isFirst) {
+            WarpBean warpBean = new WarpBean(true, "未完成");
+            mDatas.add(warpBean);
         }
-        if (!TextUtils.isEmpty(jsonHas)) {
-            listHas = gson.fromJson(jsonHas, new TypeToken<List<Bean>>() {
+
+
+        if (!TextUtils.isEmpty(jsonData)) {
+            List<WarpBean> warpBeen = gson.fromJson(jsonData, new TypeToken<List<WarpBean>>() {
             }.getType());
+            mDatas.addAll(warpBeen);
+        }
+
+        if (isFirst) {
+            WarpBean warpBean2 = new WarpBean(true, "已经完成");
+            mDatas.add(warpBean2);
         }
 
 
@@ -196,12 +160,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void save() {
-
-        jsonNotYet = gson.toJson(listNotYet);
-        jsonHas = gson.toJson(listHas);
-        Log.e("asd", jsonHas + "-----" + jsonNotYet);
-        editor.putString(SAVEKAY, jsonNotYet);
-        editor.putString(SAVEKAY2, jsonHas);
+        editor.putBoolean(IS_FIRST, false);
+        jsonData = gson.toJson(mDatas);
+        editor.putString(SAVEKAY, jsonData);
         editor.commit();
     }
 }

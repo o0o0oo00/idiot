@@ -41,6 +41,7 @@
             android:id="@+id/iv_remove"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="invisible"
             android:src="@drawable/clear" />
 
         <TextView
@@ -53,6 +54,7 @@
             tools:text="这里是内容" />
 
         <ImageView
+            android:visibility="invisible"
             android:id="@+id/iv_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
