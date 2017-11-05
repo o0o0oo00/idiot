@@ -15,6 +15,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<WarpBean> mDatas = new ArrayList<>();
     private String jsonData;
     private boolean isFirst;
+    private int flag = 0;//设计的标志位，用于找到已经完成的第一个位置，以便于插入
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +81,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                 WarpBean warpBean = (WarpBean) adapter.getData().get(position);
+
+                if (warpBean.isHeader) {
+                    return;
+                }
+
                 if (warpBean.t.getStatus() == 0) {
                     warpBean.t.setStatus(1);
-                    mDatas.add(mDatas.size(), warpBean);
+                    mDatas.add(flag, warpBean);
                     mDatas.remove(position);
                 } else {
                     mDatas.add(1, warpBean);
@@ -123,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bean.setStartDate(System.currentTimeMillis() + "");
         bean.setStatus(0);
         mDatas.add(1, new WarpBean(bean));
+        flag++;
         adapter.notifyDataSetChanged();
     }
 
@@ -143,6 +151,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             List<WarpBean> warpBeen = gson.fromJson(jsonData, new TypeToken<List<WarpBean>>() {
             }.getType());
             mDatas.addAll(warpBeen);
+        }
+
+        for (WarpBean mData : mDatas) {
+            if (mData.t != null) {
+                if (mData.t.getStatus() == 0) {
+                    flag++;
+                }
+            } else {
+                flag++;
+            }
+        }
+        //从1号元素（略过0号元素）开始，当遇到t为空时候证明是“已完成”header,所以循环到i就是未完成的数量。
+        for (int i = 1; i < mDatas.size(); i++) {
+            if (mDatas.get(i).t == null) {
+                flag = i;
+                break;
+            }
         }
 
         if (isFirst) {
