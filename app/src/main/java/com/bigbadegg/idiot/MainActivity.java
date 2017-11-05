@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private List<WarpBean> mDatas = new ArrayList<>();
     private String jsonData;
     private boolean isFirst;
-    private int flag = 0;//设计的标志位，用于找到已经完成的第一个位置，以便于插入
+    private int flag = 2;//设计的标志位，用于找到已经完成的第一个位置，以便于插入
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,15 +85,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (warpBean.isHeader) {
                     return;
                 }
-
                 if (warpBean.t.getStatus() == 0) {
                     warpBean.t.setStatus(1);
                     mDatas.add(flag, warpBean);
                     mDatas.remove(position);
+                    flag--;
                 } else {
                     mDatas.add(1, warpBean);
                     mDatas.remove(position + 1);
                     warpBean.t.setStatus(0);
+                    flag++;
                 }
                 MainActivity.this.adapter.notifyDataSetChanged();
             }
@@ -153,19 +154,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mDatas.addAll(warpBeen);
         }
 
-        for (WarpBean mData : mDatas) {
-            if (mData.t != null) {
-                if (mData.t.getStatus() == 0) {
-                    flag++;
-                }
-            } else {
-                flag++;
-            }
-        }
         //从1号元素（略过0号元素）开始，当遇到t为空时候证明是“已完成”header,所以循环到i就是未完成的数量。
         for (int i = 1; i < mDatas.size(); i++) {
             if (mDatas.get(i).t == null) {
-                flag = i;
+                flag = i + 1;//header的下面一位
                 break;
             }
         }
